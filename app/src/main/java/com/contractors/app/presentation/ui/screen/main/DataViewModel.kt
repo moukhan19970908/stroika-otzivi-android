@@ -1,6 +1,5 @@
 package com.contractors.app.presentation.ui.screen.main
 
-import android.provider.ContactsContract.Data
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,6 +36,9 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.yandex.mapkit.geometry.Point
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.w3c.dom.Text
@@ -130,7 +132,10 @@ sealed interface DataAction {
 class DataViewModel @Inject constructor(
     private val appRepository: AppRepository
 ) : ViewModel() {
-    var state by mutableStateOf(DataState())
+//    var state by mutableStateOf(DataState())
+    private val _stateFlow = MutableStateFlow(DataState())
+    val stateFlow = _stateFlow.asStateFlow()
+
     fun onAction(action: DataAction) {
         when (action) {
             is DataAction.SetPost -> setPost(action.post)
@@ -190,11 +195,11 @@ class DataViewModel @Inject constructor(
                 val city = item.getString("city")
                 cityList.add(city)
             }
-            state = state.copy(
+            _stateFlow.update { it.copy(
                 hintList = cityList
-            )
+            ) }
             Log.d("HINT", cityList.toString())
-            Log.d("HINT", state.hintList.toString())
+            Log.d("HINT", _stateFlow.value.hintList.toString())
         }
     }
 
@@ -203,7 +208,7 @@ class DataViewModel @Inject constructor(
             val gson = Gson()
             val objectTypes = gson.fromJson(result, ObjectTypesObjDTO::class.java)
             val specListServer = objectTypes.data.map { it.toObjectTypes() }.map { it.name }
-            state = state.copy(objectTypes = specListServer.ifEmpty { objectTypeList })
+            _stateFlow.update { it.copy(objectTypes = specListServer.ifEmpty { objectTypeList }) }
         }
 
     }
@@ -222,37 +227,38 @@ class DataViewModel @Inject constructor(
         appRepository.search(param.text) { _, result ->
             val gson = Gson()
             val posts = gson.fromJson(result, SearchResult::class.java)
-            state = state.copy(searchPosts = posts, isSearch = true)
+            _stateFlow.update { it.copy(searchPosts = posts, isSearch = true) }
         }
-        state = state.copy(searchParam = param)
+        _stateFlow.update { it.copy(searchParam = param) }
     }
 
     private fun getOwnPosts(token: String) {
         appRepository.getOwnPosts(token) { _, result ->
             val gson = Gson()
             val posts = gson.fromJson(result, OwnPostsDTO::class.java)
-            state = state.copy(ownPosts = posts)
+            _stateFlow.update { it.copy(ownPosts = posts) }
         }
     }
 
     private fun setDataType(changeDataType: ChangeDataType) {
-        state = state.copy(changeDataType = changeDataType)
+        _stateFlow.update { it.copy(changeDataType = changeDataType) }
     }
 
     private fun setCommentList(commentList: List<OwnComment>) {
-        state = state.copy(commentList = commentList)
+        _stateFlow.update { it.copy(commentList = commentList) }
     }
 
     private fun search(text: String) {
         appRepository.search(text) { _, result ->
             val gson = Gson()
             val posts = gson.fromJson(result, SearchResult::class.java)
-            state = state.copy(searchPosts = posts, isSearch = true)
+            _stateFlow.update { it.copy(searchPosts = posts, isSearch = true) }
+
         }
     }
 
     private fun setShowAllType(listType: ListType) {
-        state = state.copy(listType = listType)
+        _stateFlow.update { it.copy(listType = listType) }
     }
 
     private fun getAvatarById(id: String, callback: (String?) -> Unit) {
@@ -269,7 +275,7 @@ class DataViewModel @Inject constructor(
             val type = object : TypeToken<List<OtherComment>>() {}.type
             val comments: List<OtherComment> = gson.fromJson(result, type)
 
-            state = state.copy(otherCommentList = comments)
+            _stateFlow.update { it.copy(otherCommentList = comments) }
         }
     }
 
@@ -278,14 +284,14 @@ class DataViewModel @Inject constructor(
             val gson = Gson()
             val specializations = gson.fromJson(result, SpecializationsObjDTO::class.java)
             val specListServer = specializations.data.map { it.toSpecialization() }.map { it.name }
-            state = state.copy(specializations = specListServer.ifEmpty { professionList })
+            _stateFlow.update { it.copy(specializations = specListServer.ifEmpty { professionList }) }
         }
     }
 
 
 
     private fun setProfileId(id: String) {
-        state = state.copy(otherUserId = id)
+        _stateFlow.update { it.copy(otherUserId = id) }
     }
 
     private fun addRealtorComment(
@@ -317,7 +323,7 @@ class DataViewModel @Inject constructor(
     ) {
         appRepository.addCommentToBlog(text, blogId, token) { code, _ ->
             if (code == 200) {
-                getBlogById(token, state.blog.id.toString())
+                getBlogById(token, _stateFlow.value.blog.id.toString())
                 callback(true)
             }
         }
@@ -327,7 +333,7 @@ class DataViewModel @Inject constructor(
         appRepository.getProfileById(id) { _, result ->
             val gson = Gson()
             val user = gson.fromJson(result, UserResponse::class.java)
-            state = state.copy(otherUser = user)
+            _stateFlow.update { it.copy(otherUser = user) }
         }
     }
 
@@ -335,7 +341,7 @@ class DataViewModel @Inject constructor(
         appRepository.getBlogs(token) { _, result ->
             val gson = Gson()
             val blogs = gson.fromJson(result, Blogs::class.java)
-            state = state.copy(blogs = blogs)
+            _stateFlow.update { it.copy(blogs = blogs) }
         }
     }
 
@@ -343,7 +349,7 @@ class DataViewModel @Inject constructor(
         appRepository.getBlogById(token, id) { _, result ->
             val gson = Gson()
             val blog = gson.fromJson(result, Blog::class.java)
-            state = state.copy(blog = blog)
+            _stateFlow.update { it.copy(blog = blog) }
         }
     }
 
@@ -351,23 +357,23 @@ class DataViewModel @Inject constructor(
         appRepository.getPosts { _, result ->
             val gson = Gson()
             val posts = gson.fromJson(result, SearchResult::class.java)
-            state = state.copy(posts = posts)
+            _stateFlow.update { it.copy(posts = posts) }
         }
         appRepository.getTopPosts { _, result ->
             val gson = Gson()
             val posts = gson.fromJson(result, SearchResult::class.java)
-            state = state.copy(topPosts = posts)
+            _stateFlow.update { it.copy(topPosts = posts) }
         }
         appRepository.getNearestPosts(point.latitude, point.longitude) { _, result ->
             val gson = Gson()
             val posts = gson.fromJson(result, SearchResult::class.java)
-            state = state.copy(nearestPosts = posts)
+            _stateFlow.update { it.copy(nearestPosts = posts) }
         }
     }
 
     private fun uploadImage(files: List<File>, token: String, callback: (List<Int>) -> Unit) {
         val listId = mutableListOf<Int>()
-        state = state.copy(selectedImages = files)
+        _stateFlow.update { it.copy(selectedImages = files) }
         var counter = 0
 
         files.forEach {
@@ -395,39 +401,40 @@ class DataViewModel @Inject constructor(
     }
 
     private fun setComment(comment: OwnComment) {
-        state = state.copy(comment = comment)
+        _stateFlow.update { it.copy(comment = comment) }
     }
 
     private fun setPost(post: PostDTO) {
         appRepository.getPostById(post.id.toString()) { _, result ->
             val gson = Gson()
             val newPost = gson.fromJson(result, PostDTO::class.java)
-            state = state.copy(selectedPost = newPost.toPost(isFavorite = false))
+            _stateFlow.update { it.copy(selectedPost = newPost.toPost(isFavorite = false)) }
         }
     }
 
     private fun getFavoriteFourPosts() {
         viewModelScope.launch(AppDispatchers.Default) {
-            state = state.copy(favoritePosts = appRepository.loadFourFavoritesPost())
+            _stateFlow.update { it.copy(favoritePosts = appRepository.loadFourFavoritesPost()) }
         }
     }
 
     private fun getFavoriteAllPosts() {
         viewModelScope.launch(AppDispatchers.Default) {
-            state = state.copy(favoritePosts = appRepository.loadAllFavoritesPost())
+            _stateFlow.update { it.copy(favoritePosts = appRepository.loadAllFavoritesPost()) }
         }
     }
 
     private fun addPostToFavorite(post: Post) {
         viewModelScope.launch(AppDispatchers.Default) {
             appRepository.insertFavoritePost(post.copy(isFavorite = true))
-
+            _stateFlow.update { it.copy(favoritePosts = appRepository.loadAllFavoritesPost()) }
         }
     }
 
     private fun removePostFromFavorites(post: Post) {
         viewModelScope.launch(AppDispatchers.Default) {
             appRepository.removeFavoritePostById(idServer = post.id)
+            _stateFlow.update { it.copy(favoritePosts = appRepository.loadAllFavoritesPost()) }
         }
     }
 

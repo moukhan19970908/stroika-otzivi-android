@@ -14,6 +14,8 @@ import com.contractors.app.domain.utils.BASE_URL
 import com.contractors.app.domain.utils.errorParser
 import com.contractors.app.presentation.ui.model.Post
 import com.contractors.app.presentation.ui.model.toPost
+import com.contractors.app.presentation.ui.screen.reg.RegView
+import com.contractors.app.presentation.ui.screen.reg.professionList
 import com.contractors.app.presentation.ui.screen.sendCode.SendParam
 import com.google.gson.Gson
 import io.ktor.client.HttpClient
@@ -51,6 +53,13 @@ class AppRepository @Inject constructor(
         )
     }
     fun registration(info: RegistrationInfo, callback: (Int, String) -> Unit) {
+
+       //   professionList
+
+      var foundL22 =  professionList.indexOf(info.special)
+
+        foundL22 += 1
+
         val body =
             if (info.user_type_id != "1") {
                 mutableMapOf(
@@ -63,6 +72,9 @@ class AppRepository @Inject constructor(
                     "middle_name" to info.last_name,
                 )
             } else {
+
+
+
                 mutableMapOf(
                     "email" to info.email,
                     "phone" to info.phone,
@@ -72,7 +84,7 @@ class AppRepository @Inject constructor(
                     "name" to info.name,
                     "surname" to info.sure_name,
                     "middle_name" to info.last_name,
-                    "specialist_id" to "1",
+                    "specialist_id" to  foundL22.toString(),  //"7", // was 1
                 )
             }
 
@@ -391,12 +403,6 @@ class AppRepository @Inject constructor(
         database.favoriteDao().deleteFavoritePostById(idServer = idServer)
     }
 
-    fun addressHint(text: String, callback: (Int, String) -> Unit){
-        requestGet(
-            "${BASE_URL}api/searchAddress?query=${text}",
-            callback
-        )
-    }
 
     private fun uploadImage(
         url: String,
@@ -490,4 +496,6 @@ class AppRepository @Inject constructor(
             callback = callback,
         )
     }
+
+
 }

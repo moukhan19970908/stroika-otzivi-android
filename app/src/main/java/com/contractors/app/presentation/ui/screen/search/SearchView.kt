@@ -1,7 +1,5 @@
 package com.contractors.app.presentation.ui.screen.search
 
-import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -45,7 +43,6 @@ import com.contractors.app.presentation.ui.elements.components.DefButton
 import com.contractors.app.presentation.ui.elements.components.DefIcon
 import com.contractors.app.presentation.ui.elements.components.DefText
 import com.contractors.app.presentation.ui.elements.list.ColumnPostType1List
-import com.contractors.app.presentation.ui.model.Post
 import com.contractors.app.presentation.ui.model.SearchParam
 import com.contractors.app.presentation.ui.navigation.LocalDataViewModel
 import com.contractors.app.presentation.ui.navigation.LocalLoginViewModel
@@ -57,9 +54,7 @@ import com.contractors.app.presentation.ui.theme.Black
 import com.contractors.app.presentation.ui.theme.ColorIcon
 import com.contractors.app.presentation.ui.theme.Gray
 import com.contractors.app.presentation.ui.theme.White
-import com.contractors.app.ui.elements.com.contractors.app.presentation.ui.elements.YandexMapView
 import kotlinx.coroutines.delay
-import javax.inject.Inject
 
 @Composable
 fun SearchView() {
@@ -86,31 +81,52 @@ private fun Body(modifier: Modifier = Modifier) {
     val navController = LocalNavController.current
     val dataViewModel = LocalDataViewModel.current
     val user = LocalLoginViewModel.current.state
+    val stateFlow by dataViewModel.stateFlow.collectAsStateWithLifecycle()
 //    При получении объекта приходит Platform type и нужно пересоздавать объект
-    var list = dataViewModel.state.searchPosts.data.data.map {
-        it.copy(
-            id = it.id,
-            title = it.title,
-            description = it.description,
-            user_id = it.user_id,
-            latitude = it.latitude,
-            longitude = it.longitude,
-            status = it.status,
-            address = it.address,
-            rating = it.rating,
-            created_at = it.created_at,
-            updated_at = it.updated_at,
-            get_first_image = it.get_first_image ?: Image(),
-            images = it.images ?: emptyList(),
-            master_comments = it.master_comments ?: emptyList(),
-            rieltor_comments = it.rieltor_comments ?: emptyList(),
-            distance = it.distance,
-            isFavorite = it.isFavorite
 
-        )
-    }
-    list.forEach {
-        Log.d("MAP", "${it.latitude} : ${it.longitude}")
+    val list = stateFlow.searchPosts.data.data.map {
+        if (stateFlow.favoritePosts.any { dbList -> dbList.id == it.id }) {
+            it.copy(
+                id = it.id,
+                title = it.title,
+                description = it.description,
+                user_id = it.user_id,
+                latitude = it.latitude,
+                longitude = it.longitude,
+                status = it.status,
+                address = it.address,
+                rating = it.rating,
+                created_at = it.created_at,
+                updated_at = it.updated_at,
+                get_first_image = it.get_first_image ?: Image(),
+                images = it.images ?: emptyList(),
+                master_comments = it.master_comments ?: emptyList(),
+                rieltor_comments = it.rieltor_comments ?: emptyList(),
+                distance = it.distance,
+                isFavorite = true
+            )
+        } else {
+            it.copy(
+                id = it.id,
+                title = it.title,
+                description = it.description,
+                user_id = it.user_id,
+                latitude = it.latitude,
+                longitude = it.longitude,
+                status = it.status,
+                address = it.address,
+                rating = it.rating,
+                created_at = it.created_at,
+                updated_at = it.updated_at,
+                get_first_image = it.get_first_image ?: Image(),
+                images = it.images ?: emptyList(),
+                master_comments = it.master_comments ?: emptyList(),
+                rieltor_comments = it.rieltor_comments ?: emptyList(),
+                distance = it.distance,
+                isFavorite = false
+            )
+        }
+
     }
 
     var searchText by remember { mutableStateOf("") }

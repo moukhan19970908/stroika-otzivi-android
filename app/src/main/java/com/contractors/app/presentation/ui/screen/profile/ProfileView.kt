@@ -33,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,12 +45,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.contractors.app.R
+import com.contractors.app.data.network.Image
 import com.contractors.app.data.network.UpdateProfileInfo
 import com.contractors.app.data.network.model.toPostDTO
 import com.contractors.app.domain.utils.Const
@@ -88,6 +91,7 @@ import com.contractors.app.presentation.ui.theme.LightGray
 import com.contractors.app.presentation.ui.theme.SecondaryDark
 import com.contractors.app.presentation.ui.theme.VeryDarkGray
 import com.contractors.app.presentation.ui.theme.White
+import kotlinx.coroutines.delay
 
 enum class EditType {
     Name,
@@ -414,16 +418,30 @@ private fun Body(
     val context = LocalContext.current
     val loginViewModel = LocalLoginViewModel.current
     val dataViewModel = LocalDataViewModel.current
+    val stateFlow by dataViewModel.stateFlow.collectAsStateWithLifecycle()
+
     LaunchedEffect(Unit) {
-        dataViewModel.onAction(DataAction.GetOwnPosts(loginViewModel.state.token))
         dataViewModel.onAction(DataAction.GetFavoriteFourPosts)
+        dataViewModel.onAction(DataAction.GetOwnPosts(loginViewModel.state.token))
         loginViewModel.onAction(LoginAction.GetProfile())
+
         Log.e("APPPPP", loginViewModel.state.userInfo.toString())
     }
+
+    val favoritePostList: List<Post> = stateFlow.favoritePosts
+
+    val ownPost = stateFlow.ownPosts.data.mapIndexed { index, item ->
+            if (stateFlow.favoritePosts.any { dbList -> dbList.id == item.id }) {
+                item.toPost(id = index, isFavorite = true)
+            } else {
+                item.toPost(id = index, isFavorite = false)
+            }
+        }
+
     val navController = LocalNavController.current
     val user = loginViewModel.state.userInfo
     var isFullProfileShown by remember { mutableStateOf(false) }
-    val ownPost = dataViewModel.state.ownPosts.data.mapIndexed { index, item -> item.toPost(id = index, isFavorite = false)}
+
     Column(
         Modifier
             .fillMaxSize()
@@ -731,7 +749,7 @@ private fun Body(
 
         }
 
-        val favoritePostList: List<Post> = dataViewModel.state.favoritePosts
+
         Row(
             modifier = Modifier
                 .padding(horizontal = 16.dp, vertical = 12.dp)

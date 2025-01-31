@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -20,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,10 +37,14 @@ import com.contractors.app.domain.utils.BASE_URL
 import com.contractors.app.domain.utils.Const
 import com.contractors.app.domain.utils.formatDate
 import com.contractors.app.domain.utils.userTypeToRole
+import com.contractors.app.presentation.ui.elements.components.DefIcon
 import com.contractors.app.presentation.ui.elements.components.DefImage
 import com.contractors.app.presentation.ui.elements.components.DefText
 import com.contractors.app.presentation.ui.theme.Black
+import com.contractors.app.presentation.ui.theme.Blue
+import com.contractors.app.presentation.ui.theme.DarkGray
 import com.contractors.app.presentation.ui.theme.Gray
+import com.contractors.app.presentation.ui.theme.LightGray
 import com.contractors.app.presentation.ui.theme.White
 
 @Composable
@@ -56,7 +63,7 @@ internal fun MasterCommentView(
             .border(1.dp, Gray, RoundedCornerShape(8.dp))
             .padding(12.dp)
             .clickable(
-                onClick = { Modifier.clickable { readMore(item) } },
+                onClick = { readMore.invoke(item) },
                 indication = null,
                 interactionSource = interactionSource
             )

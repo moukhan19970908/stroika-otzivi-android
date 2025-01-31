@@ -158,10 +158,16 @@ class LoginViewModel @Inject constructor(
     }
 
     private fun registration(info: RegistrationInfo, callback: (Boolean, String) -> Unit) {
+
+        println(" my register Llsakjdksjd = ${info.special}")
+        println(" userType_id == ${info.user_type_id} ")
+
         ktorRepository.registration(info) { code, result ->
             if (code == 200) {
+                println(" ok register SUCCESS !ldskjflkasdjflk ")
                 callback(true, "Success")
             } else {
+                       println(" ok register FUYUCJLJCICUCUUCUCUC  ldskjflkasdjflk ")
                 callback(false, errorParser(result))
             }
         }

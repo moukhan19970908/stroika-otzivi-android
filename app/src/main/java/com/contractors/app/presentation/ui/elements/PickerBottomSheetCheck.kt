@@ -94,6 +94,7 @@ fun PickerBottomSheetCheck(
                                 )
                         )
                         if (isSingle) {
+                            println(" my selected lLOS ")
                             RadioButton(
                                 selected = check,
                                 colors = RadioButtonColors(
@@ -104,11 +105,13 @@ fun PickerBottomSheetCheck(
 
                                 ),
                                 onClick = {
+                                    println(" my selected  lLOS and  ${item.toString()}")
                                     callback(listOf(item))
                                 }
 
                             )
                         } else {
+                            // Checkbox was
                             Checkbox(
                                 check,
                                 colors = CheckboxDefaults.colors(

@@ -42,6 +42,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -322,6 +323,7 @@ fun Forms(
     var isPassRepeatError by remember { mutableStateOf(false) }
     var errorList: List<Int> by remember { mutableStateOf(emptyList()) }
     val dataViewModel = LocalDataViewModel.current
+    val stateFlow by dataViewModel.stateFlow.collectAsStateWithLifecycle()
 
     Column(
         Modifier
@@ -374,12 +376,13 @@ fun Forms(
                     title = "Специальность*",
                     label = "Ваша специальность",
                     text = special,
-                    list = dataViewModel.state.specializations,
-                    isSingle = false,
+                    list = stateFlow.specializations,
+                    isSingle = true, // was false
                     onChange = { special = it },
                     isError = errorList.contains(3),
                     modifier = Modifier.padding(top = 10.dp)
                 )
+                println(" my special == ${special}")
             }
 
             AnimatedVisibility(regForm == RegForm.Master) {
@@ -557,7 +560,6 @@ fun Forms(
                     .imePadding()
                     .padding(bottom = 20.dp)
             ) {
-                Log.e("APP", special)
                 checkRegistrations(
                     context = context,
                     toastHelper = toastHelper,

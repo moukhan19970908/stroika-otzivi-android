@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.contractors.app.data.network.model.PostDTO
 import com.contractors.app.presentation.ui.elements.list.GridPostType1List
 import com.contractors.app.presentation.ui.model.Post
 
@@ -27,7 +26,10 @@ fun MainLists(
             title = "",
             list = list,
             clickItem = {},
-            onFavoriteIconClicked = {},
+            onFavoriteIconFilledClicked = {
+            },
+            onFavoriteIconUnfilledClicked = {
+            },
         )
 
     }

@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.contractors.app.R
 import com.contractors.app.data.network.MasterComment
 import com.contractors.app.data.network.RealtorComment
@@ -51,10 +52,11 @@ fun CommentListView() {
     val navController = LocalNavController.current
     val dataViewModel = LocalDataViewModel.current
     val loginViewModel = LocalLoginViewModel.current
+    val stateFlow by dataViewModel.stateFlow.collectAsStateWithLifecycle()
 
-    val item = dataViewModel.state.selectedPost
+    val item = stateFlow.selectedPost
     val allList =
-        dataViewModel.state.commentList.sortedBy { Instant.parse(it.created_at).toEpochMilli() }
+        stateFlow.commentList.sortedBy { Instant.parse(it.created_at).toEpochMilli() }
             .reversed()
 
     var select by remember { mutableStateOf(0) }

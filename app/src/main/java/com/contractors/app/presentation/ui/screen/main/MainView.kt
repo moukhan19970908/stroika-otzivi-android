@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -93,10 +94,11 @@ private fun Body(
     showAll: (ListType) -> Unit,
 ) {
     val dataViewModel = LocalDataViewModel.current
-    val list = dataViewModel.state.posts.data.data
-    val topList = dataViewModel.state.topPosts.data.data
-    val nearestList = dataViewModel.state.nearestPosts.data.data
-    val showAllList = when (dataViewModel.state.listType) {
+    val stateFlow by dataViewModel.stateFlow.collectAsStateWithLifecycle()
+    val list = stateFlow.posts.data.data
+    val topList = stateFlow.topPosts.data.data
+    val nearestList = stateFlow.nearestPosts.data.data
+    val showAllList = when (stateFlow.listType) {
         ListType.Nearest -> nearestList
         ListType.Interesting -> list
         ListType.Top -> topList

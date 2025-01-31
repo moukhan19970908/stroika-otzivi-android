@@ -48,6 +48,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
@@ -82,6 +83,8 @@ import com.contractors.app.presentation.ui.theme.White
 import com.contractors.app.domain.utils.Const
 import com.contractors.app.domain.utils.getFileFromUri
 import com.contractors.app.domain.utils.isValidPhone
+import com.contractors.app.presentation.ui.screen.main.DataState
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun NewCommentView() {
@@ -115,6 +118,7 @@ private fun Body(success: () -> Unit) {
     val loginViewModel = LocalLoginViewModel.current
     val dataViewModel = LocalDataViewModel.current
     val toastHelper = LocalToastHelper.current
+    val stateFlow by dataViewModel.stateFlow.collectAsStateWithLifecycle()
 
     Column(
         Modifier
@@ -122,27 +126,31 @@ private fun Body(success: () -> Unit) {
             .fillMaxSize()
     ) {
         when (loginViewModel.state.userInfo.role) {
-            Role.Realtor -> NewCommentRealtor({
+            Role.Realtor -> NewCommentRealtor(
+                stateFlow = stateFlow,
+                success = {
                 dataViewModel.onAction(
                     DataAction.AddRealtorComment(
                         it,
                         loginViewModel.state.token
                     ) { result, error ->
                         if (result) {
-                            dataViewModel.onAction(DataAction.SetPost(dataViewModel.state.selectedPost.toPostDTO()))
+                            dataViewModel.onAction(DataAction.SetPost(stateFlow.selectedPost.toPostDTO()))
                             navController.navigate(Screen.Item.name)
                         } else toastHelper.show(error)
                     })
             })
 
-            Role.Master -> NewCommentMaster({
+            Role.Master -> NewCommentMaster(
+                stateFlow = stateFlow,
+                success = {
                 dataViewModel.onAction(
                     DataAction.AddMasterComment(
                         it,
                         loginViewModel.state.token
                     ) { result, error ->
                         if (result) {
-                            dataViewModel.onAction(DataAction.SetPost(dataViewModel.state.selectedPost.toPostDTO()))
+                            dataViewModel.onAction(DataAction.SetPost(stateFlow.selectedPost.toPostDTO()))
                             navController.navigate(Screen.Item.name)
                         } else toastHelper.show(error)
                     })
@@ -154,7 +162,7 @@ private fun Body(success: () -> Unit) {
 }
 
 @Composable
-fun NewCommentMaster(success: (MasterCommentInfo) -> Unit) {
+fun NewCommentMaster(stateFlow: DataState, success: (MasterCommentInfo) -> Unit) {
 
     val toastHelper = LocalToastHelper.current
     val context = LocalContext.current
@@ -209,7 +217,6 @@ fun NewCommentMaster(success: (MasterCommentInfo) -> Unit) {
             singleLine = false,
             isError = errorList.contains(2)
         )
-        /*
         DefTextField(
             name,
             title = "Имя заказчика*",
@@ -243,8 +250,6 @@ fun NewCommentMaster(success: (MasterCommentInfo) -> Unit) {
                 if (number.isNotEmpty()) isNumberError = !number.isValidPhone()
             }
         )
-        */
-
         DefTextField(
             exp,
             title = "Отзыв об объекте*",
@@ -399,7 +404,7 @@ fun NewCommentMaster(success: (MasterCommentInfo) -> Unit) {
                         grade3,
                         grade4,
                         grade5,
-                        dataViewModel.state.selectedPost.id,
+                        stateFlow.selectedPost.id,
                         images.toTypedArray()
                     )
                 )
@@ -409,7 +414,7 @@ fun NewCommentMaster(success: (MasterCommentInfo) -> Unit) {
 }
 
 @Composable
-fun NewCommentRealtor(success: (RealtorCommentInfo) -> Unit) {
+fun NewCommentRealtor(stateFlow: DataState, success: (RealtorCommentInfo) -> Unit) {
 
     val dataViewModel = LocalDataViewModel.current
 
@@ -493,7 +498,7 @@ fun NewCommentRealtor(success: (RealtorCommentInfo) -> Unit) {
                     ad,
                     disAd,
                     grade,
-                    dataViewModel.state.selectedPost.id,
+                    stateFlow.selectedPost.id,
                     images.toTypedArray()
                 )
             )

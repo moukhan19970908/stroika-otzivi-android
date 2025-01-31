@@ -17,6 +17,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,7 +58,7 @@ fun DefCardPostType1(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
-    var onFavoriteIconClicked by remember { mutableStateOf(item.isFavorite) }
+    var onFavoriteIconClicked = item.isFavorite
     Card(
         shape = RoundedCornerShape(20.dp),
         colors = CardColors(

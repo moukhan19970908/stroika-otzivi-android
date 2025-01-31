@@ -38,6 +38,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
@@ -58,6 +59,7 @@ import com.contractors.app.presentation.ui.screen.blog.Header
 import com.contractors.app.presentation.ui.screen.comment.GradeRow
 import com.contractors.app.presentation.ui.screen.login.model.Role
 import com.contractors.app.presentation.ui.screen.main.DataAction
+import com.contractors.app.presentation.ui.screen.main.DataState
 import com.contractors.app.presentation.ui.theme.Black
 import com.contractors.app.presentation.ui.theme.DarkBlue
 import com.contractors.app.presentation.ui.theme.DarkGray
@@ -78,10 +80,11 @@ fun OtherProfileView() {
 
     val navController = LocalNavController.current
     val dataViewModel = LocalDataViewModel.current
+    val stateFlow by dataViewModel.stateFlow.collectAsStateWithLifecycle()
     var form by remember { mutableStateOf(ProfileForm.Statistic) }
 
     LaunchedEffect(Unit) {
-        dataViewModel.onAction(DataAction.GetProfileById(dataViewModel.state.otherUserId))
+        dataViewModel.onAction(DataAction.GetProfileById(stateFlow.otherUserId))
     }
 
     Box(
@@ -99,6 +102,7 @@ fun OtherProfileView() {
                 openForm = {
                     form = it
                 },
+                stateFlow = stateFlow
             )
         }
     }
@@ -108,10 +112,10 @@ fun OtherProfileView() {
 private fun Body(
     feedback: ProfileForm,
     openForm: (ProfileForm) -> Unit,
+    stateFlow: DataState
 ) {
     val context = LocalContext.current
-    val dataViewModel = LocalDataViewModel.current
-    val user = dataViewModel.state.otherUser.user
+    val user = stateFlow.otherUser.user
 
     val role = if (user.user_type_id == 3) Role.Customer else Role.Master
 
@@ -177,20 +181,23 @@ private fun Body(
             }
         ) {
             when(it) {
-                ProfileForm.Feedback -> FeedbackList(role)
+                ProfileForm.Feedback -> FeedbackList(role, stateFlow)
                 ProfileForm.Statistic -> {
                     when (role) {
                         Role.Master -> MasterBody(
                             showAllFeedback = {openForm(ProfileForm.Feedback)},
-                            createFeedback = {openForm(ProfileForm.NewFeedback)}
+                            createFeedback = {openForm(ProfileForm.NewFeedback)},
+                            stateFlow = stateFlow,
                         )
                         Role.Customer -> CustomerBody(
                             showAllFeedback = {openForm(ProfileForm.Feedback)},
-                            createFeedback = {openForm(ProfileForm.NewFeedback)}
+                            createFeedback = {openForm(ProfileForm.NewFeedback)},
+                            stateFlow = stateFlow,
                         )
                         else -> MasterBody(
                             showAllFeedback = {openForm(ProfileForm.Feedback)},
-                            createFeedback = {openForm(ProfileForm.NewFeedback)}
+                            createFeedback = {openForm(ProfileForm.NewFeedback)},
+                            stateFlow = stateFlow,
                         )
                     }
                 }
@@ -201,9 +208,8 @@ private fun Body(
 }
 
 @Composable
-private fun FeedbackList(role: Role) {
-    val dataViewModel = LocalDataViewModel.current
-    val list = dataViewModel.state.otherCommentList.sortedBy { Instant.parse(it.created_at).toEpochMilli() }.reversed()
+private fun FeedbackList(role: Role, stateFlow: DataState) {
+    val list = stateFlow.otherCommentList.sortedBy { Instant.parse(it.created_at).toEpochMilli() }.reversed()
 
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(5.dp)
@@ -307,9 +313,9 @@ fun CommentItemMaster(commentItem: OtherComment) {
 private fun MasterBody(
     showAllFeedback: () -> Unit,
     createFeedback: () -> Unit,
+    stateFlow: DataState
 ) {
-    val dataViewModel = LocalDataViewModel.current
-    val user = dataViewModel.state.otherUser.user
+    val user = stateFlow.otherUser.user
 
     Column {
         ProfileRow(
@@ -342,10 +348,11 @@ private fun MasterBody(
 private fun CustomerBody(
     showAllFeedback: () -> Unit,
     createFeedback: () -> Unit,
+    stateFlow: DataState
 ) {
     val dataViewModel = LocalDataViewModel.current
-    val user = dataViewModel.state.otherUser.user
-    val userResp = dataViewModel.state.otherUser
+    val user = stateFlow.otherUser.user
+    val userResp = stateFlow.otherUser
 
     LaunchedEffect(Unit) {
         dataViewModel.onAction(DataAction.GetUserComments(user.id))
