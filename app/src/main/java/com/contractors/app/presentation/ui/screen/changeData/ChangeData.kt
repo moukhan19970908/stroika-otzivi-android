@@ -19,6 +19,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.contractors.app.R
+import com.contractors.app.data.network.RegistrationInfo
 import com.contractors.app.presentation.ui.elements.components.DefText
 
 import com.contractors.app.presentation.ui.elements.components.DefTextField
@@ -112,6 +113,7 @@ private fun Body() {
                         navController.navigate(Screen.Profile.name)
                     }
                 )))
+                sendCodeViewModel.onAction(SendCodeAction.SetRegInfo(RegistrationInfo(phone = number)))
                 navController.navigate(Screen.SendCode.name)
             }
         }

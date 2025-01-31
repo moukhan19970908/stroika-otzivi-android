@@ -132,6 +132,7 @@ fun RegView() {
                                     }
                                 )
                             ))
+                            sendCodeViewModel.onAction(SendCodeAction.SetRegInfo(registrationInfo))
                             navController.navigate(Screen.SendCode.name)
                         } else {
                             toastHelper.show(error)
