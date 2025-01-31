@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.contractors.app.R
 import com.contractors.app.data.network.Image
 import com.contractors.app.data.network.model.toPostDTO
@@ -81,10 +82,11 @@ private fun Body(modifier: Modifier = Modifier) {
     val navController = LocalNavController.current
     val dataViewModel = LocalDataViewModel.current
     val user = LocalLoginViewModel.current.state
+    val stateFlow by dataViewModel.stateFlow.collectAsStateWithLifecycle()
 //    При получении объекта приходит Platform type и нужно пересоздавать объект
 
-    val list = dataViewModel.state.searchPosts.data.data.map {
-        if (dataViewModel.state.favoritePosts.any { dbList -> dbList.id == it.id }) {
+    val list = stateFlow.searchPosts.data.data.map {
+        if (stateFlow.favoritePosts.any { dbList -> dbList.id == it.id }) {
             it.copy(
                 id = it.id,
                 title = it.title,

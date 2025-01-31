@@ -1,6 +1,5 @@
 package com.contractors.app.presentation.ui.screen.item
 
-import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,7 +21,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,6 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
@@ -59,22 +58,19 @@ import com.contractors.app.presentation.ui.theme.Gray
 import com.contractors.app.presentation.ui.theme.LightGray
 import com.contractors.app.domain.utils.BASE_URL
 import com.contractors.app.domain.utils.Const
-import com.contractors.app.domain.utils.calculateDistanceYandex
 import com.contractors.app.domain.utils.formatDate
 import com.contractors.app.domain.utils.fullTrim
 import com.contractors.app.domain.utils.openYandexMaps
 import com.contractors.app.presentation.ui.elements.RequestLocationPermission
 import com.contractors.app.presentation.ui.elements.components.DefButton
-import com.contractors.app.presentation.ui.model.Post
-import com.contractors.app.presentation.ui.model.toPost
-import com.contractors.app.presentation.ui.screen.login.LoginAction
-import kotlinx.coroutines.delay
+import com.contractors.app.presentation.ui.screen.main.DataState
 import java.time.Instant
 
 @Composable
 fun ItemView() {
     val navController = LocalNavController.current
     val dataViewModel = LocalDataViewModel.current
+    val stateFlow by dataViewModel.stateFlow.collectAsStateWithLifecycle()
     RequestLocationPermission()
 
     Box(
@@ -85,7 +81,7 @@ fun ItemView() {
                 navController.popBackStack()
             }
             Body(
-
+                stateFlow = stateFlow,
                 readComment = {
                     dataViewModel.onAction(DataAction.SetComment(it))
                     navController.navigate(Screen.Comment.name)
@@ -97,17 +93,13 @@ fun ItemView() {
 }
 
 @Composable
-private fun Body(readComment: (OwnComment) -> Unit) {
+private fun Body(readComment: (OwnComment) -> Unit, stateFlow: DataState) {
     val context = LocalContext.current
     val navController = LocalNavController.current
     val dataViewModel = LocalDataViewModel.current
     val item = dataViewModel.state.selectedPost
-    var onFavoriteIconClicked by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        dataViewModel.onAction(DataAction.GetFavoriteAllPosts)
-        delay(100)
-        onFavoriteIconClicked = dataViewModel.state.favoritePosts.any { it.id == item.id }
-    }
+
+    var onFavoriteIconClicked = stateFlow.favoritePosts.any { it.id == item.id }
     val loginViewModel = LocalLoginViewModel.current
     val list = item.master_comments + item.rieltor_comments
     Box {

@@ -36,6 +36,9 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.yandex.mapkit.geometry.Point
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
@@ -127,6 +130,8 @@ class DataViewModel @Inject constructor(
     private val appRepository: AppRepository
 ) : ViewModel() {
     var state by mutableStateOf(DataState())
+    private val _stateFlow = MutableStateFlow(DataState())
+    val stateFlow = _stateFlow.asStateFlow()
 
     fun onAction(action: DataAction) {
         when (action) {
@@ -202,6 +207,7 @@ class DataViewModel @Inject constructor(
             val gson = Gson()
             val posts = gson.fromJson(result, SearchResult::class.java)
             state = state.copy(searchPosts = posts, isSearch = true)
+            _stateFlow.update { it.copy(searchPosts = posts, isSearch = true) }
         }
         state = state.copy(searchParam = param)
     }
@@ -211,6 +217,7 @@ class DataViewModel @Inject constructor(
             val gson = Gson()
             val posts = gson.fromJson(result, OwnPostsDTO::class.java)
             state = state.copy(ownPosts = posts)
+            _stateFlow.update { it.copy(ownPosts = posts) }
         }
     }
 
@@ -226,7 +233,8 @@ class DataViewModel @Inject constructor(
         appRepository.search(text) { _, result ->
             val gson = Gson()
             val posts = gson.fromJson(result, SearchResult::class.java)
-            state = state.copy(searchPosts = posts, isSearch = true)
+            _stateFlow.update { it.copy(searchPosts = posts, isSearch = true) }
+
         }
     }
 
@@ -387,26 +395,27 @@ class DataViewModel @Inject constructor(
 
     private fun getFavoriteFourPosts() {
         viewModelScope.launch(AppDispatchers.Default) {
-            state = state.copy(favoritePosts = appRepository.loadFourFavoritesPost())
+            _stateFlow.update { it.copy(favoritePosts = appRepository.loadFourFavoritesPost()) }
         }
     }
 
     private fun getFavoriteAllPosts() {
         viewModelScope.launch(AppDispatchers.Default) {
-            state = state.copy(favoritePosts = appRepository.loadAllFavoritesPost())
+            _stateFlow.update { it.copy(favoritePosts = appRepository.loadAllFavoritesPost()) }
         }
     }
 
     private fun addPostToFavorite(post: Post) {
         viewModelScope.launch(AppDispatchers.Default) {
             appRepository.insertFavoritePost(post.copy(isFavorite = true))
-
+            _stateFlow.update { it.copy(favoritePosts = appRepository.loadAllFavoritesPost()) }
         }
     }
 
     private fun removePostFromFavorites(post: Post) {
         viewModelScope.launch(AppDispatchers.Default) {
             appRepository.removeFavoritePostById(idServer = post.id)
+            _stateFlow.update { it.copy(favoritePosts = appRepository.loadAllFavoritesPost()) }
         }
     }
 

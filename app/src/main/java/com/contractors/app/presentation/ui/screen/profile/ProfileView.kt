@@ -45,6 +45,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.request.CachePolicy
@@ -417,6 +418,7 @@ private fun Body(
     val context = LocalContext.current
     val loginViewModel = LocalLoginViewModel.current
     val dataViewModel = LocalDataViewModel.current
+    val stateFlow by dataViewModel.stateFlow.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         dataViewModel.onAction(DataAction.GetFavoriteFourPosts)
@@ -426,16 +428,15 @@ private fun Body(
         Log.e("APPPPP", loginViewModel.state.userInfo.toString())
     }
 
-    val favoritePostList: List<Post> = dataViewModel.state.favoritePosts
+    val favoritePostList: List<Post> = stateFlow.favoritePosts
 
-    val ownPost by remember { mutableStateOf(
-        dataViewModel.state.ownPosts.data.mapIndexed { index, item ->
-            if (dataViewModel.state.favoritePosts.any { dbList -> dbList.id == item.id }) {
+    val ownPost = stateFlow.ownPosts.data.mapIndexed { index, item ->
+            if (stateFlow.favoritePosts.any { dbList -> dbList.id == item.id }) {
                 item.toPost(id = index, isFavorite = true)
             } else {
                 item.toPost(id = index, isFavorite = false)
             }
-        }) }
+        }
 
     val navController = LocalNavController.current
     val user = loginViewModel.state.userInfo
