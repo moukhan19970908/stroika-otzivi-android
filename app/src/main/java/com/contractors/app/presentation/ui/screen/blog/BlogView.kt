@@ -173,7 +173,6 @@ private fun OpenBlog(
     val stateFlow by dataViewModel.stateFlow.collectAsStateWithLifecycle()
     val blog = stateFlow.blog
     val scrollState = rememberScrollState()
-    val scope = rememberCoroutineScope()
 
     val userInfo = loginViewModel.state.userInfo
     val isCanComment = loginViewModel.state.token.isNotEmpty() && userInfo.role != Role.Realtor

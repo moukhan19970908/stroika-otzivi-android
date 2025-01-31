@@ -76,7 +76,7 @@ fun CommentView() {
     ) {
         Column {
             Header(R.string.toReturn) {
-                navController.navigate(Screen.Item.name)
+                navController.popBackStack()
             }
             Body {
                 dataViewModel.onAction(DataAction.SetProfileById(it))
