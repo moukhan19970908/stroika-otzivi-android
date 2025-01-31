@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.contractors.app.R
 import com.contractors.app.data.network.RegistrationInfo
 import com.contractors.app.presentation.ui.elements.components.DefText
@@ -47,7 +48,8 @@ fun ChangeData() {
 
     val navController = LocalNavController.current
     val dataViewModel = LocalDataViewModel.current
-    val dataType = dataViewModel.state.changeDataType
+    val stateFlow by dataViewModel.stateFlow.collectAsStateWithLifecycle()
+    val dataType = stateFlow.changeDataType
 
     Box(
         Modifier.fillMaxSize()
@@ -76,7 +78,8 @@ private fun Body() {
     val dataViewModel = LocalDataViewModel.current
     val navController = LocalNavController.current
     val sendCodeViewModel = LocalSendCodeViewModel.current
-    val dataType = dataViewModel.state.changeDataType
+    val stateFlow by dataViewModel.stateFlow.collectAsStateWithLifecycle()
+    val dataType = stateFlow.changeDataType
 
     Column(
         Modifier.padding(40.dp),

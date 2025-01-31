@@ -97,7 +97,7 @@ private fun Body(readComment: (OwnComment) -> Unit, stateFlow: DataState) {
     val context = LocalContext.current
     val navController = LocalNavController.current
     val dataViewModel = LocalDataViewModel.current
-    val item = dataViewModel.state.selectedPost
+    val item = stateFlow.selectedPost
 
     var onFavoriteIconClicked = stateFlow.favoritePosts.any { it.id == item.id }
     val loginViewModel = LocalLoginViewModel.current

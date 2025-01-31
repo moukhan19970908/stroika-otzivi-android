@@ -42,6 +42,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -323,6 +324,7 @@ fun Forms(
     var isPassRepeatError by remember { mutableStateOf(false) }
     var errorList: List<Int> by remember { mutableStateOf(emptyList()) }
     val dataViewModel = LocalDataViewModel.current
+    val stateFlow by dataViewModel.stateFlow.collectAsStateWithLifecycle()
 
     Column(
         Modifier
@@ -375,7 +377,7 @@ fun Forms(
                     title = "Специальность*",
                     label = "Ваша специальность",
                     text = special,
-                    list = dataViewModel.state.specializations,
+                    list = stateFlow.specializations,
                     isSingle = false,
                     onChange = { special = it },
                     isError = errorList.contains(3),

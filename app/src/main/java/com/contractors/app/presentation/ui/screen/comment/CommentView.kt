@@ -34,6 +34,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
@@ -89,7 +90,8 @@ fun CommentView() {
 private fun Body(openProfile: (String) -> Unit) {
 
     val dataViewModel = LocalDataViewModel.current
-    val item = dataViewModel.state.comment
+    val stateFlow by dataViewModel.stateFlow.collectAsStateWithLifecycle()
+    val item = stateFlow.comment
 
     Column(
         Modifier

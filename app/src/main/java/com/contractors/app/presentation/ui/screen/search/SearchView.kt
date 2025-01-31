@@ -162,7 +162,6 @@ private fun Body(modifier: Modifier = Modifier) {
         isLoading = false
 
         dataViewModel.onAction(DataAction.GetFavoriteAllPosts)
-        println(dataViewModel.state.favoritePosts)
     }
     if(interactionSource.collectIsFocusedAsState().value) {
         isFirstInit = false

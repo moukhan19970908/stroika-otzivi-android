@@ -7,9 +7,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.contractors.app.data.network.Blog
 import com.contractors.app.presentation.ui.navigation.LocalDataViewModel
 
@@ -17,7 +19,8 @@ import com.contractors.app.presentation.ui.navigation.LocalDataViewModel
 internal fun BlogsList(onClick: (Blog) -> Unit) {
     val context = LocalContext.current
     val dataViewModel = LocalDataViewModel.current
-    val list = dataViewModel.state.blogs.data
+    val stateFlow by dataViewModel.stateFlow.collectAsStateWithLifecycle()
+    val list = stateFlow.blogs.data
 
     LazyColumn(
         Modifier

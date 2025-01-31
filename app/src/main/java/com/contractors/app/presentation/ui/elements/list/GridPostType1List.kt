@@ -26,7 +26,8 @@ internal fun GridPostType1List(
     title: String,
     list: List<Post>,
     clickItem: (Post) -> Unit,
-    onFavoriteIconClicked: (postItem: Post) -> Unit,
+    onFavoriteIconFilledClicked: (postItem: Post) -> Unit,
+    onFavoriteIconUnfilledClicked: (postItem: Post) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column {
@@ -52,8 +53,8 @@ internal fun GridPostType1List(
                 DefCardPostType1(
                     item = item,
                     distance = distance,
-                    onFavoriteIconUnfilledClicked = { onFavoriteIconClicked(item) },
-                    onFavoriteIconFilledClicked = { onFavoriteIconClicked(item) },
+                    onFavoriteIconUnfilledClicked = { onFavoriteIconUnfilledClicked.invoke(item) },
+                    onFavoriteIconFilledClicked = { onFavoriteIconFilledClicked.invoke(item) },
 
                     onCardClicked = { post ->
                         clickItem(post)
