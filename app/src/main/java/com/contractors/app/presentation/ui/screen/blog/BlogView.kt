@@ -32,6 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -132,7 +133,8 @@ private fun Body(
     openBlogItem: (Blog) -> Unit
 ) {val loginViewModel = LocalLoginViewModel.current
     val dataViewModel = LocalDataViewModel.current
-    val blog = dataViewModel.state.blog
+    val stateFlow by dataViewModel.stateFlow.collectAsStateWithLifecycle()
+    val blog = stateFlow.blog
     val toastHelper = LocalToastHelper.current
     NavHost(
         modifier = Modifier
@@ -168,9 +170,9 @@ private fun OpenBlog(
     val dataViewModel = LocalDataViewModel.current
     val loginViewModel = LocalLoginViewModel.current
     val toastHelper = LocalToastHelper.current
-    val blog = dataViewModel.state.blog
+    val stateFlow by dataViewModel.stateFlow.collectAsStateWithLifecycle()
+    val blog = stateFlow.blog
     val scrollState = rememberScrollState()
-    val scope = rememberCoroutineScope()
 
     val userInfo = loginViewModel.state.userInfo
     val isCanComment = loginViewModel.state.token.isNotEmpty() && userInfo.role != Role.Realtor

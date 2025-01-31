@@ -22,6 +22,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.contractors.app.R
 import com.contractors.app.data.network.CreatePostInfo
 import com.contractors.app.presentation.ui.elements.components.DefTextField
@@ -86,6 +87,7 @@ private fun Body(create: (CreatePostInfo) -> Unit, loadPhoto: () -> Unit) {
     val toastHelper = LocalToastHelper.current
     val loginViewModel = LocalLoginViewModel.current
     val dataViewModel = LocalDataViewModel.current
+    val stateFlow by dataViewModel.stateFlow.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     var title by remember { mutableStateOf("") }
@@ -101,6 +103,7 @@ private fun Body(create: (CreatePostInfo) -> Unit, loadPhoto: () -> Unit) {
     var conditions1 by remember { mutableStateOf(false) }
     var errorList: List<Int> by remember { mutableStateOf(emptyList()) }
     val isNumberError by remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) { dataViewModel.onAction(DataAction.GetObjectTypes()) }
 
     Column(
@@ -130,8 +133,6 @@ private fun Body(create: (CreatePostInfo) -> Unit, loadPhoto: () -> Unit) {
             label = "Область, район, город, улица, номер дома",
             errorText = "Укажите адрес объекта",
             onValueChange = {
-
-
                 address = it
             },
             modifier = Modifier
@@ -145,7 +146,7 @@ private fun Body(create: (CreatePostInfo) -> Unit, loadPhoto: () -> Unit) {
             label = "Выберите тип объекта",
             text = type,
             errorText = "Укажите тип объекта",
-            list = dataViewModel.state.objectTypes,
+            list = stateFlow.objectTypes,
             isSingle = true,
             onChange = { type = it },
             modifier = Modifier.padding(top = 10.dp),
@@ -270,7 +271,7 @@ private fun Body(create: (CreatePostInfo) -> Unit, loadPhoto: () -> Unit) {
                     longitude,
                     address,
                     images.toTypedArray(),
-                    type_id = dataViewModel.state.objectTypes.indexOf(type)+1,
+                    type_id = stateFlow.objectTypes.indexOf(type)+1,
                     customer_name = loginViewModel.state.userInfo.name + " " + loginViewModel.state.userInfo.surname
                 )
             )

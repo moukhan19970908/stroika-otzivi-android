@@ -61,7 +61,9 @@ fun ColumnPostType1List(
                     onFavoriteIconFilledClicked(item.id)
                 }
             )
+            println(item.isFavorite)
         }
+
         item { Spacer(Modifier.height(100.dp)) }
     }
 }

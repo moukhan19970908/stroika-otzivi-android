@@ -6,9 +6,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.contractors.app.R
 import com.contractors.app.data.network.model.toPostDTO
 import com.contractors.app.presentation.ui.elements.list.GridPostType1List
@@ -51,7 +53,8 @@ fun FavoritesView() {
 private fun Body() {
     val navController = LocalNavController.current
     val dataViewModel = LocalDataViewModel.current
-    val favoritesPost = dataViewModel.state.favoritePosts
+    val stateFlow by dataViewModel.stateFlow.collectAsStateWithLifecycle()
+    val favoritesPost = stateFlow.favoritePosts
 
     GridPostType1List(
         title = "",
@@ -60,8 +63,11 @@ private fun Body() {
             dataViewModel.onAction(DataAction.SetPost(postItem.toPostDTO()))
             navController.navigate(Screen.Item.name)
         },
-        onFavoriteIconClicked = { postItem ->
+        onFavoriteIconUnfilledClicked = { postItem ->
             dataViewModel.onAction(DataAction.AddPostToFavorite(postItem))
+        },
+        onFavoriteIconFilledClicked = { postItem ->
+            dataViewModel.onAction(DataAction.RemoveFavoritePost(postItem))
         },
 
         modifier = Modifier.padding(0.dp)

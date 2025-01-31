@@ -35,6 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
@@ -57,18 +58,19 @@ import com.contractors.app.presentation.ui.theme.Gray
 import com.contractors.app.presentation.ui.theme.LightGray
 import com.contractors.app.domain.utils.BASE_URL
 import com.contractors.app.domain.utils.Const
-import com.contractors.app.domain.utils.calculateDistanceYandex
 import com.contractors.app.domain.utils.formatDate
 import com.contractors.app.domain.utils.fullTrim
 import com.contractors.app.domain.utils.openYandexMaps
 import com.contractors.app.presentation.ui.elements.RequestLocationPermission
 import com.contractors.app.presentation.ui.elements.components.DefButton
+import com.contractors.app.presentation.ui.screen.main.DataState
 import java.time.Instant
 
 @Composable
 fun ItemView() {
     val navController = LocalNavController.current
     val dataViewModel = LocalDataViewModel.current
+    val stateFlow by dataViewModel.stateFlow.collectAsStateWithLifecycle()
     RequestLocationPermission()
 
     Box(
@@ -79,7 +81,7 @@ fun ItemView() {
                 navController.popBackStack()
             }
             Body(
-
+                stateFlow = stateFlow,
                 readComment = {
                     dataViewModel.onAction(DataAction.SetComment(it))
                     navController.navigate(Screen.Comment.name)
@@ -91,11 +93,13 @@ fun ItemView() {
 }
 
 @Composable
-private fun Body(readComment: (OwnComment) -> Unit) {
+private fun Body(readComment: (OwnComment) -> Unit, stateFlow: DataState) {
     val context = LocalContext.current
     val navController = LocalNavController.current
     val dataViewModel = LocalDataViewModel.current
-    val item = dataViewModel.state.selectedPost
+    val item = stateFlow.selectedPost
+
+    var onFavoriteIconClicked = stateFlow.favoritePosts.any { it.id == item.id }
     val loginViewModel = LocalLoginViewModel.current
     val list = item.master_comments + item.rieltor_comments
     Box {
@@ -105,7 +109,6 @@ private fun Body(readComment: (OwnComment) -> Unit) {
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            var onFavoriteIconClicked by remember { mutableStateOf(false) }
             Column(
                 Modifier.padding(horizontal = 16.dp)
             ) {

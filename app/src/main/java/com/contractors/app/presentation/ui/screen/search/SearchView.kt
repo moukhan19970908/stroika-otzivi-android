@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.contractors.app.R
 import com.contractors.app.data.network.Image
 import com.contractors.app.data.network.model.toPostDTO
@@ -81,28 +82,52 @@ private fun Body(modifier: Modifier = Modifier) {
     val navController = LocalNavController.current
     val dataViewModel = LocalDataViewModel.current
     val user = LocalLoginViewModel.current.state
+    val stateFlow by dataViewModel.stateFlow.collectAsStateWithLifecycle()
 //    При получении объекта приходит Platform type и нужно пересоздавать объект
-    val list = dataViewModel.state.searchPosts.data.data.map {
-        it.copy(
-            id = it.id,
-            title = it.title,
-            description = it.description,
-            user_id = it.user_id,
-            latitude = it.latitude,
-            longitude = it.longitude,
-            status = it.status,
-            address = it.address,
-            rating = it.rating,
-            created_at = it.created_at,
-            updated_at = it.updated_at,
-            get_first_image = it.get_first_image ?: Image(),
-            images = it.images ?: emptyList(),
-            master_comments = it.master_comments ?: emptyList(),
-            rieltor_comments = it.rieltor_comments ?: emptyList(),
-            distance = it.distance,
-            isFavorite = it.isFavorite
 
-        )
+    val list = stateFlow.searchPosts.data.data.map {
+        if (stateFlow.favoritePosts.any { dbList -> dbList.id == it.id }) {
+            it.copy(
+                id = it.id,
+                title = it.title,
+                description = it.description,
+                user_id = it.user_id,
+                latitude = it.latitude,
+                longitude = it.longitude,
+                status = it.status,
+                address = it.address,
+                rating = it.rating,
+                created_at = it.created_at,
+                updated_at = it.updated_at,
+                get_first_image = it.get_first_image ?: Image(),
+                images = it.images ?: emptyList(),
+                master_comments = it.master_comments ?: emptyList(),
+                rieltor_comments = it.rieltor_comments ?: emptyList(),
+                distance = it.distance,
+                isFavorite = true
+            )
+        } else {
+            it.copy(
+                id = it.id,
+                title = it.title,
+                description = it.description,
+                user_id = it.user_id,
+                latitude = it.latitude,
+                longitude = it.longitude,
+                status = it.status,
+                address = it.address,
+                rating = it.rating,
+                created_at = it.created_at,
+                updated_at = it.updated_at,
+                get_first_image = it.get_first_image ?: Image(),
+                images = it.images ?: emptyList(),
+                master_comments = it.master_comments ?: emptyList(),
+                rieltor_comments = it.rieltor_comments ?: emptyList(),
+                distance = it.distance,
+                isFavorite = false
+            )
+        }
+
     }
 
     var searchText by remember { mutableStateOf("") }
@@ -136,6 +161,7 @@ private fun Body(modifier: Modifier = Modifier) {
         isDropdownMenuExpanded = true
         isLoading = false
 
+        dataViewModel.onAction(DataAction.GetFavoriteAllPosts)
     }
     if(interactionSource.collectIsFocusedAsState().value) {
         isFirstInit = false
@@ -233,10 +259,12 @@ private fun Body(modifier: Modifier = Modifier) {
                         navController.navigate(Screen.Item.name)
                     },
                     onFavoriteIconUnfilledClicked = { id ->
-                        dataViewModel.onAction(DataAction.AddPostToFavorite(list[id]))
+                        val item = list.find { it.id == id }
+                        item?.let { dataViewModel.onAction(DataAction.AddPostToFavorite(it)) }
                     },
                     onFavoriteIconFilledClicked = { id ->
-                        dataViewModel.onAction(DataAction.RemoveFavoritePost(list[id]))
+                        val item = list.find { it.id == id }
+                        item?.let { dataViewModel.onAction(DataAction.RemoveFavoritePost(it)) }
                     },
                     modifier = Modifier.padding(top = 8.dp)
                 )
